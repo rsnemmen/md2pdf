@@ -88,3 +88,12 @@ Options:
 | `--check` | Report status without installing |
 | `-y` / `--yes` | Skip all confirmation prompts |
 
+## Testing
+
+See [`tests/README.md`](tests/README.md) for setup and usage. Requires [bats-core](https://github.com/bats-core/bats-core):
+
+```sh
+brew install bats-core   # macOS
+bats tests/              # run the full suite
+```
+

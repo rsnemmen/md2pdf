@@ -388,6 +388,8 @@ convert_file() {
     return "$status"
 }
 
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+
 trap cleanup_progress EXIT
 
 toc_enabled=0
@@ -411,6 +413,9 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             show_usage
             exit 0
+            ;;
+        -)
+            break
             ;;
         --)
             shift
@@ -491,3 +496,5 @@ else
         exit 1
     fi
 fi
+
+fi # end BASH_SOURCE guard
