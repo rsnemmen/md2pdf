@@ -16,7 +16,6 @@ Output filename is derived by stripping the input's extension and adding .pdf,
 or specified explicitly as the second argument in single-file mode.
 
 Options:
-  --math       Convert LaTeX delimiters: \(...\) → \$...\$ and \[...\] → \$\$...\$\$
   -s, --simple Use basic Pandoc output (no template, 1in margins)
   --toc        Include a table of contents
   --no-toc     Do not include a table of contents (default)
@@ -28,14 +27,14 @@ Arguments:
   -            Read from stdin (single-file mode only; requires explicit output.pdf)
 
 Examples:
-  $0 report.md                     # produces report.pdf without a TOC
-  $0 --toc report.md               # produces report.pdf with a TOC
-  $0 --math notes.md               # convert LaTeX delimiters before rendering
-  $0 -s --math notes.md            # simple template with math conversion
-  $0 --math notes.md out.pdf       # explicit output filename
-  $0 a.md b.md c.md                # produces a.pdf, b.pdf, c.pdf
-  $0 *.md                          # batch-convert all .md files in current directory
-  cat notes.md | $0 --math - out.pdf  # stdin input
+  $0 report.md                  # produces report.pdf without a TOC
+  $0 --toc report.md            # produces report.pdf with a TOC
+  $0 notes.md                   # LaTeX math delimiters auto-detected and converted
+  $0 -s notes.md                # simple template
+  $0 notes.md out.pdf           # explicit output filename
+  $0 a.md b.md c.md             # produces a.pdf, b.pdf, c.pdf
+  $0 *.md                       # batch-convert all .md files in current directory
+  cat notes.md | $0 - out.pdf   # stdin input
 EOF
 }
 
@@ -188,6 +187,10 @@ strip_leading_thinking() {
     '
 }
 
+contains_math() {
+    grep -qE '\\\(|\\\[' "$1"
+}
+
 convert_delimiters() {
     sed \
         -e 's/\\(/$/g' \
@@ -248,17 +251,23 @@ preprocess() {
 }
 
 convert_file() {
-    local input="$1" output="$2" verbose="${3:-1}"
+    local input="$1" output="$2" verbose="${3:-1}" display_input="${4:-}"
     local input_path="$input"
+    local math_enabled=0
     local status
     local temp_err=""
     local -a pandoc_args
 
+    [[ -z "$display_input" ]] && display_input="$input"
     [[ "$input" == "-" ]] && input_path="/dev/stdin"
 
     if [[ "$input" != "-" && ! -r "$input" ]]; then
         print_stderr_line "Error: Cannot read input '$input'"
         return 1
+    fi
+
+    if [[ "$input_path" != "/dev/stdin" ]] && contains_math "$input_path"; then
+        math_enabled=1
     fi
 
     if [[ "$use_simple" -eq 1 ]]; then
@@ -284,7 +293,7 @@ convert_file() {
     fi
 
     if [[ "$verbose" -eq 1 ]]; then
-        printf '\033[1;36mGenerating PDF: %s → %s\033[0m\n' "$input" "$output" >&2
+        printf '\033[1;36mGenerating PDF: %s → %s\033[0m\n' "$display_input" "$output" >&2
     else
         temp_err=$(mktemp) || return 1
     fi
@@ -319,16 +328,11 @@ convert_file() {
 trap cleanup_progress EXIT
 
 toc_enabled=0
-math_enabled=0
 use_simple=0
 
 # Parse options
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --math)
-            math_enabled=1
-            shift
-            ;;
         -s|--simple)
             use_simple=1
             shift
@@ -371,21 +375,27 @@ if [[ "$use_simple" -eq 0 && ! -f ~/.local/share/pandoc/templates/eisvogel.latex
     echo "Warning: eisvogel template not found — run ./install.sh to set up dependencies" >&2
 fi
 
+# Buffer stdin so it can be scanned for math before conversion
+stdin_buffer=""
+if [[ "$1" == "-" ]]; then
+    stdin_buffer=$(mktemp) || { echo "Error: mktemp failed" >&2; exit 1; }
+    trap 'rm -f "$stdin_buffer"; cleanup_progress' EXIT
+    cat > "$stdin_buffer"
+fi
+
 # Single-file mode with explicit output filename
 if [[ $# -eq 2 && "$2" == *.pdf && ! -e "$2" && ( "$1" == "-" || -r "$1" ) ]]; then
-    convert_file "$1" "$2"
+    convert_file "${stdin_buffer:-$1}" "$2" 1 "$1"
 
 # Single-file mode with derived output filename
 elif [[ $# -eq 1 ]]; then
     input="$1"
-    input_path="$input"
-    [[ "$input" == "-" ]] && input_path="/dev/stdin"
     output="${input%.*}.pdf"
-    if [[ "$input" != "-" && ! -r "$input_path" ]]; then
+    if [[ "$input" != "-" && ! -r "$input" ]]; then
         echo "Error: Cannot read input '$input'" >&2
         exit 1
     fi
-    convert_file "$input" "$output"
+    convert_file "${stdin_buffer:-$input}" "$output" 1 "$input"
 
 # Batch mode
 else

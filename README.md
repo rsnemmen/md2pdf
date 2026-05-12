@@ -4,7 +4,7 @@ Convert Markdown to PDF via [pandoc](https://pandoc.org) + XeLaTeX + the [eisvog
 
 Features:
 - Strips leading chatbot "thinking" preambles before conversion
-- Optional `\(...\)` / `\[...\]` → `$...$` / `$$...$$` math delimiter conversion
+- Automatic `\(...\)` / `\[...\]` → `$...$` / `$$...$$` math delimiter conversion when detected
 - Fixes missing blank lines before lists (common in AI-generated output)
 - Batch mode with progress bar for converting multiple files at once
 
@@ -26,7 +26,6 @@ Usage: md2pdf [options] <input.md> [output.pdf]
        md2pdf [options] <input1.md> <input2.md> ...
 
 Options:
-  --math       Convert LaTeX delimiters: \(...\) → $...$ and \[...\] → $$...$$
   -s, --simple Use basic Pandoc output (no template, 1in margins)
   --toc        Include a table of contents
   --no-toc     Do not include a table of contents (default)
@@ -38,14 +37,14 @@ Arguments:
   -            Read from stdin (single-file mode only; requires explicit output.pdf)
 
 Examples:
-  md2pdf report.md                     # produces report.pdf without a TOC
-  md2pdf --toc report.md               # with a TOC
-  md2pdf --math notes.md               # convert LaTeX delimiters before rendering
-  md2pdf -s --math notes.md            # simple template with math conversion
-  md2pdf --math notes.md out.pdf       # explicit output filename
-  md2pdf a.md b.md c.md                # produces a.pdf, b.pdf, c.pdf
-  md2pdf *.md                          # batch-convert all .md files
-  cat notes.md | md2pdf --math - out.pdf  # stdin input
+  md2pdf report.md                  # produces report.pdf without a TOC
+  md2pdf --toc report.md            # with a TOC
+  md2pdf notes.md                   # LaTeX math delimiters auto-detected and converted
+  md2pdf -s notes.md                # simple template
+  md2pdf notes.md out.pdf           # explicit output filename
+  md2pdf a.md b.md c.md             # produces a.pdf, b.pdf, c.pdf
+  md2pdf *.md                       # batch-convert all .md files
+  cat notes.md | md2pdf - out.pdf   # stdin input
 ```
 
 ## install.sh
