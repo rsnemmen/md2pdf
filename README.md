@@ -19,7 +19,7 @@ Features:
 ```sh
 git clone <repo-url> md2pdf
 cd md2pdf
-./install.sh        # installs pandoc, XeLaTeX, eisvogel, and symlinks md2pdf to ~/.local/bin
+./install.sh        # installs pandoc, XeLaTeX, eisvogel, and copies md2pdf to ~/.local/bin (re-run after pulls)
 md2pdf report.md    # produces report.pdf
 ```
 
@@ -79,7 +79,7 @@ The installer handles everything needed to run `md2pdf`:
 | XeLaTeX | `brew install --cask basictex` | texlive-xetex + extras |
 | eisvogel tlmgr packages | `sudo tlmgr install ...` | covered by texlive-*-extra |
 | eisvogel template | downloaded from GitHub releases | same |
-| PATH symlink | `~/.local/bin/md2pdf → ./md2pdf.sh` | same |
+| PATH copy | `~/.local/bin/md2pdf` (re-run `./install.sh` after pulls) | same |
 
 Options:
 

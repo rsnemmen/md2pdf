@@ -135,7 +135,7 @@ strip_leading_thinking() {
             lower = tolower(line)
             is_blank = (line ~ /^[[:space:]]*$/)
             is_quote = (line ~ /^[[:space:]]*>/)
-            is_thinking_marker = (line ~ /^[[:space:]]*[*_][^*_]*[*_][[:space:]]*$/ && lower ~ /thinking/)
+            is_thinking_marker = (line ~ /^[[:space:]]*[*_]{1,2}[^*_]+[*_]{1,2}[[:space:]]*$/ && lower ~ /thinking/)
 
             if (mode == "start") {
                 if (NR == 1 && is_thinking_marker) {
@@ -187,16 +187,72 @@ strip_leading_thinking() {
     '
 }
 
-contains_math() {
-    grep -qE '\\\(|\\\[' "$1"
-}
-
 convert_delimiters() {
-    sed \
-        -e 's/\\(/$/g' \
-        -e 's/\\)/$/g' \
-        -e 's/\\\[/$$/g' \
-        -e 's/\\\]/$$/g'
+    awk '
+        BEGIN {
+            in_code_block = 0
+            in_math_block = 0
+        }
+
+        {
+            line = $0
+
+            if (match(line, /^[[:space:]]{0,3}(```+|~~~+)/)) {
+                in_code_block = !in_code_block
+                print line
+                next
+            }
+
+            if (in_code_block) {
+                print line
+                next
+            }
+
+            if (line ~ /^[[:space:]]*\$\$[[:space:]]*$/) {
+                in_math_block = !in_math_block
+                print line
+                next
+            }
+
+            if (in_math_block) {
+                print line
+                next
+            }
+
+            print convert_line(line)
+        }
+
+        function convert_line(s,    out, i, n, c, nc, in_code) {
+            out = ""
+            n = length(s)
+            in_code = 0
+            i = 1
+            while (i <= n) {
+                c = substr(s, i, 1)
+                if (c == "`") {
+                    in_code = !in_code
+                    out = out c
+                    i++
+                    continue
+                }
+                if (in_code) {
+                    out = out c
+                    i++
+                    continue
+                }
+                if (c == "\\" && i < n) {
+                    nc = substr(s, i+1, 1)
+                    if (nc == "(") { out = out "$";  i += 2; continue }
+                    if (nc == ")") { out = out "$";  i += 2; continue }
+                    if (nc == "[") { out = out "$$"; i += 2; continue }
+                    if (nc == "]") { out = out "$$"; i += 2; continue }
+                }
+                out = out c
+                i++
+            }
+            return out
+        }
+    '
 }
 
 ensure_blank_before_lists() {
@@ -259,17 +315,12 @@ ensure_blank_before_lists() {
 }
 
 preprocess() {
-    if [[ "$math_enabled" -eq 1 ]]; then
-        strip_leading_thinking | convert_delimiters | ensure_blank_before_lists
-    else
-        strip_leading_thinking | ensure_blank_before_lists
-    fi
+    strip_leading_thinking | convert_delimiters | ensure_blank_before_lists
 }
 
 convert_file() {
     local input="$1" output="$2" verbose="${3:-1}" display_input="${4:-}"
     local input_path="$input"
-    local math_enabled=0
     local status
     local temp_err=""
     local -a pandoc_args
@@ -280,10 +331,6 @@ convert_file() {
     if [[ "$input" != "-" && ! -r "$input" ]]; then
         print_stderr_line "Error: Cannot read input '$input'"
         return 1
-    fi
-
-    if [[ "$input_path" != "/dev/stdin" ]] && contains_math "$input_path"; then
-        math_enabled=1
     fi
 
     if [[ "$use_simple" -eq 1 ]]; then
@@ -391,7 +438,7 @@ if [[ "$use_simple" -eq 0 && ! -f ~/.local/share/pandoc/templates/eisvogel.latex
     echo "Warning: eisvogel template not found — run ./install.sh to set up dependencies" >&2
 fi
 
-# Buffer stdin so it can be scanned for math before conversion
+# Buffer stdin to a temp file so preprocess() can read it as a seekable file
 stdin_buffer=""
 if [[ "$1" == "-" ]]; then
     stdin_buffer=$(mktemp) || { echo "Error: mktemp failed" >&2; exit 1; }
@@ -400,7 +447,7 @@ if [[ "$1" == "-" ]]; then
 fi
 
 # Single-file mode with explicit output filename
-if [[ $# -eq 2 && "$2" == *.pdf && ! -e "$2" && ( "$1" == "-" || -r "$1" ) ]]; then
+if [[ $# -eq 2 && "$2" == *.pdf && ( "$1" == "-" || -r "$1" ) ]]; then
     convert_file "${stdin_buffer:-$1}" "$2" 1 "$1"
 
 # Single-file mode with derived output filename
@@ -429,7 +476,6 @@ else
     render_bar "$completed" "$total" 30
     for input in "$@"; do
         output="${input%.*}.pdf"
-        render_bar "$completed" "$total" 30 "$input"
 
         if ! convert_file "$input" "$output" 0; then
             fail_count=$((fail_count + 1))

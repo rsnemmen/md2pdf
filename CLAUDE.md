@@ -28,8 +28,8 @@ input → preprocess() → pandoc → PDF
 ```
 
 `preprocess()` chains three awk/sed passes:
-1. `strip_leading_thinking` — removes chatbot "thinking" preambles (lines matching `*Thinking*` / `_Thinking_` at line 1, followed by blockquotes)
-2. `convert_delimiters` — converts `\(...\)` / `\[...\]` math delimiters to `$...$` / `$$...$$` (only runs when `contains_math()` detects them)
+1. `strip_leading_thinking` — removes chatbot "thinking" preambles (lines matching `*Thinking*` / `_Thinking_` / `**Thinking**` at line 1, followed by blockquotes)
+2. `convert_delimiters` — converts `\(...\)` / `\[...\]` math delimiters to `$...$` / `$$...$$`; fence-aware awk that skips fenced code blocks, `$$` math blocks, and inline code spans
 3. `ensure_blank_before_lists` — inserts blank lines before list items that immediately follow non-blank, non-list lines (fixes common AI output formatting)
 
 Two pandoc modes are controlled by `use_simple`:
