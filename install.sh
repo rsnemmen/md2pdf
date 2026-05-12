@@ -303,13 +303,13 @@ step_eisvogel() {
     ok "eisvogel template installed: $EISVOGEL_TEMPLATE"
 }
 
-step_symlink() {
+step_copy() {
     printf '\n[md2pdf on PATH]\n'
     local target="$LOCAL_BIN/md2pdf"
     local source="$SCRIPT_DIR/md2pdf.sh"
 
     if [[ ! -f "$source" ]]; then
-        warn "md2pdf.sh not found at $source — skipping symlink"
+        warn "md2pdf.sh not found at $source — skipping"
         return
     fi
 
@@ -322,17 +322,14 @@ step_symlink() {
         return
     fi
 
-    if [[ -L "$target" && "$(readlink "$target")" == "$source" ]]; then
-        ok "symlink already exists: $target"
+    if confirm "  Copy md2pdf.sh to $target?"; then
+        mkdir -p "$LOCAL_BIN"
+        cp "$source" "$target"
+        chmod +x "$target"
+        ok "installed: $target"
     else
-        if confirm "  Create symlink $target → $source?"; then
-            mkdir -p "$LOCAL_BIN"
-            ln -sf "$source" "$target"
-            ok "symlink created: $target"
-        else
-            warn "symlink: skipped"
-            return
-        fi
+        warn "install: skipped"
+        return
     fi
 
     if ! printf '%s' "$PATH" | tr ':' '\n' | grep -qxF "$LOCAL_BIN"; then
@@ -376,7 +373,7 @@ main() {
     fi
 
     step_eisvogel
-    step_symlink
+    step_copy
 
     printf '\n'
     if [[ "$check_only" -eq 1 ]]; then

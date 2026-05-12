@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 A two-file bash tool that converts Markdown to PDF via `pandoc` + XeLaTeX + the [eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template.
 
 - `md2pdf.sh` — the converter (preprocessing pipeline + pandoc invocation)
-- `install.sh` — dependency installer (pandoc, XeLaTeX, eisvogel, PATH symlink)
+- `install.sh` — dependency installer (pandoc, XeLaTeX, eisvogel, copies script to PATH)
 
 ## Running
 
@@ -41,4 +41,4 @@ Batch mode suppresses per-file verbose output and shows a `render_bar` progress 
 ## Key paths
 
 - eisvogel template: `~/.local/share/pandoc/templates/eisvogel.latex`
-- installed symlink: `~/.local/bin/md2pdf → <repo>/md2pdf.sh`
+- installed copy: `~/.local/bin/md2pdf` (re-run `./install.sh` to update after pulls)
