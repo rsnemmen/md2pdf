@@ -1,6 +1,6 @@
 # md2pdf
 
-Convert Markdown to PDF via [pandoc](https://pandoc.org) + XeLaTeX + the [eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template.
+Convert Markdown documents to pretty PDFs. Uses [pandoc](https://pandoc.org) + XeLaTeX + the [eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template.
 
 Features:
 - Strips leading chatbot "thinking" preambles before conversion
@@ -47,7 +47,23 @@ Examples:
   cat notes.md | md2pdf - out.pdf   # stdin input
 ```
 
-## install.sh
+## Platform support
+
+- **macOS** — Homebrew + BasicTeX
+- **Linux** — apt (Debian/Ubuntu), dnf (Fedora/RHEL), pacman (Arch)
+- **Windows** — use WSL (treated as Linux); native Windows is not supported
+
+## Requirements
+
+- bash 4+
+- pandoc
+- XeLaTeX (via BasicTeX on macOS, TeX Live on Linux)
+- [eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template at `~/.local/share/pandoc/templates/eisvogel.latex`
+
+The `-s` / `--simple` flag bypasses the eisvogel template entirely, so basic conversions work with just pandoc + xelatex.
+
+
+### `install.sh`
 
 The installer handles everything needed to run `md2pdf`:
 
@@ -66,17 +82,3 @@ Options:
 | `--check` | Report status without installing |
 | `-y` / `--yes` | Skip all confirmation prompts |
 
-## Platform support
-
-- **macOS** — Homebrew + BasicTeX
-- **Linux** — apt (Debian/Ubuntu), dnf (Fedora/RHEL), pacman (Arch)
-- **Windows** — use WSL (treated as Linux); native Windows is not supported
-
-## Requirements
-
-- bash 4+
-- pandoc
-- XeLaTeX (via BasicTeX on macOS, TeX Live on Linux)
-- [eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template at `~/.local/share/pandoc/templates/eisvogel.latex`
-
-The `-s` / `--simple` flag bypasses the eisvogel template entirely, so basic conversions work with just pandoc + xelatex.
