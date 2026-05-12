@@ -25,11 +25,17 @@ Options:
 EOF
 }
 
+if [[ -t 1 ]]; then
+    _GREEN='\033[0;32m' _RED='\033[0;31m' _YELLOW='\033[0;33m' _RESET='\033[0m'
+else
+    _GREEN='' _RED='' _YELLOW='' _RESET=''
+fi
+
 die()     { printf 'Error: %s\n' "$1" >&2; exit 1; }
-ok()      { printf '  [OK]      %s\n' "$1"; }
-missing() { printf '  [MISSING] %s\n' "$1"; had_missing=1; }
+ok()      { printf "  ${_GREEN}[OK]${_RESET}      %s\n" "$1"; }
+missing() { printf "  ${_RED}[MISSING]${_RESET} %s\n" "$1"; had_missing=1; }
 info()    { printf '            %s\n' "$1"; }
-warn()    { printf '  [WARN]    %s\n' "$1"; }
+warn()    { printf "  ${_YELLOW}[WARN]${_RESET}    %s\n" "$1"; }
 
 confirm() {
     local msg="$1"
