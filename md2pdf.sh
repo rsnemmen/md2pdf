@@ -205,6 +205,7 @@ ensure_blank_before_lists() {
             prev_is_blank = 1
             prev_is_list = 0
             in_code_block = 0
+            in_math_block = 0
         }
 
         {
@@ -219,6 +220,21 @@ ensure_blank_before_lists() {
             }
 
             if (in_code_block) {
+                print line
+                prev_is_blank = (line ~ /^[[:space:]]*$/)
+                prev_is_list = 0
+                next
+            }
+
+            if (line ~ /^[[:space:]]*\$\$[[:space:]]*$/) {
+                in_math_block = !in_math_block
+                print line
+                prev_is_blank = 0
+                prev_is_list = 0
+                next
+            }
+
+            if (in_math_block) {
                 print line
                 prev_is_blank = (line ~ /^[[:space:]]*$/)
                 prev_is_list = 0

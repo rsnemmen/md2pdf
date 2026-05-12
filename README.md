@@ -2,6 +2,12 @@
 
 Convert Markdown documents to pretty PDFs. Uses [pandoc](https://pandoc.org) + XeLaTeX + the [eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template.
 
+<p align="center">
+  <img src="examples/sample-source.png" width="48%" alt="Markdown source" />
+  <img src="examples/sample-pdf.png" width="48%" alt="Rendered PDF (eisvogel template)" />
+</p>
+<p align="center"><sub>Left: markdown source &nbsp;|&nbsp; Right: page 1 of the generated PDF</sub></p>
+
 Features:
 - Strips leading chatbot "thinking" preambles before conversion
 - Automatic `\(...\)` / `\[...\]` → `$...$` / `$$...$$` math delimiter conversion when detected
