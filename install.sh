@@ -5,6 +5,7 @@ EISVOGEL_TEMPLATE="$HOME/.local/share/pandoc/templates/eisvogel.latex"
 LOCAL_BIN="$HOME/.local/bin"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASICTEX_TEXBIN="/Library/TeX/texbin"
+REPO_RAW_BASE="${MD2PDF_REPO_RAW_BASE:-https://raw.githubusercontent.com/rsnemmen/md2pdf/main}"
 
 PLATFORM=""
 LINUX_PKG_MGR=""
@@ -307,10 +308,24 @@ step_copy() {
     printf '\n[md2pdf on PATH]\n'
     local target="$LOCAL_BIN/md2pdf"
     local source="$SCRIPT_DIR/md2pdf.sh"
+    local tmp_source=""
 
     if [[ ! -f "$source" ]]; then
-        warn "md2pdf.sh not found at $source — skipping"
-        return
+        if [[ "$check_only" -eq 1 ]]; then
+            if command -v md2pdf &>/dev/null; then
+                ok "md2pdf: $(command -v md2pdf)"
+            else
+                missing "md2pdf: not on PATH"
+            fi
+            return
+        fi
+        command -v curl &>/dev/null || die "curl is required to download md2pdf.sh"
+        tmp_source="$(mktemp -t md2pdf.XXXXXX)"
+        trap 'rm -f "$tmp_source"' EXIT
+        info "Downloading md2pdf.sh from $REPO_RAW_BASE ..."
+        curl -fsSL -o "$tmp_source" "$REPO_RAW_BASE/md2pdf.sh" \
+            || die "Could not download md2pdf.sh from $REPO_RAW_BASE"
+        source="$tmp_source"
     fi
 
     if [[ "$check_only" -eq 1 ]]; then
@@ -352,6 +367,12 @@ parse_args() {
 }
 
 main() {
+    # When piped from curl, stdin is the script itself — redirect to /dev/tty so
+    # confirm() prompts still reach the terminal (rustup / Homebrew use this pattern).
+    if [[ ! -t 0 ]] && true 2>/dev/null </dev/tty; then
+        exec </dev/tty
+    fi
+
     parse_args "$@"
     detect_platform
 

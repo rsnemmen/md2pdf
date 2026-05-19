@@ -16,14 +16,33 @@ Features:
 
 ## Quick start
 
+One-line install (macOS / Linux):
+
 ```sh
-git clone <repo-url> md2pdf
-cd md2pdf
-./install.sh        # installs pandoc, XeLaTeX, eisvogel, and copies md2pdf to ~/.local/bin (re-run after pulls)
-md2pdf report.md    # produces report.pdf
+curl -fsSL https://raw.githubusercontent.com/rsnemmen/md2pdf/main/install.sh | bash
 ```
 
-Run `./install.sh --check` first to see what's already present without installing anything.
+This installs pandoc, XeLaTeX, the eisvogel template, and copies `md2pdf` to `~/.local/bin`. You'll be prompted before each step.
+
+Then:
+
+```sh
+md2pdf report.md   # produces report.pdf
+```
+
+To preview what would be installed without changing anything:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/rsnemmen/md2pdf/main/install.sh | bash -s -- --check
+```
+
+### From a clone (for contributors)
+
+```sh
+git clone https://github.com/rsnemmen/md2pdf.git
+cd md2pdf
+./install.sh        # installs pandoc, XeLaTeX, eisvogel, and copies md2pdf to ~/.local/bin (re-run after pulls)
+```
 
 ## Usage
 
