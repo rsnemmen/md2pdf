@@ -17,6 +17,7 @@ or specified explicitly as the second argument in single-file mode.
 
 Options:
   -s, --simple Use basic Pandoc output (no template, 1in margins)
+  --compact    Use reduced margins and no running header in default mode
   --toc        Include a table of contents
   --no-toc     Do not include a table of contents (default)
   -h, --help   Show this help message and exit
@@ -29,6 +30,7 @@ Arguments:
 Examples:
   $0 report.md                  # produces report.pdf without a TOC
   $0 --toc report.md            # produces report.pdf with a TOC
+  $0 --compact report.md        # reduced margins and no running header
   $0 notes.md                   # LaTeX math delimiters auto-detected and converted
   $0 -s notes.md                # simple template
   $0 notes.md out.pdf           # explicit output filename
@@ -347,15 +349,19 @@ convert_file() {
             --template=eisvogel
             --syntax-highlighting=idiomatic
             -V listings=false
-            -V geometry:top=1.5cm
-            -V geometry:bottom=1.5cm
-            -V geometry:left=2.5cm
-            -V geometry:right=2.5cm
-            -V geometry:includehead
-            -V geometry:includefoot
             -V header-includes='\def\ptlstinline!#1!{\texttt{#1}}\AtBeginDocument{\def\passthrough#1{\begingroup\let\lstinline\ptlstinline #1\endgroup}}'
-            -V header-includes='\AtBeginDocument{\KOMAoptions{headsepline=0pt}}'
         )
+
+        if [[ "$compact_layout" -eq 1 ]]; then
+            pandoc_args+=(
+                -V geometry:top=0.9cm
+                -V geometry:bottom=1.5cm
+                -V geometry:left=2.5cm
+                -V geometry:right=2.5cm
+                -V geometry:includefoot
+                -V header-includes='\AtBeginDocument{\ihead*{}\chead*{}\ohead*{}\KOMAoptions{headsepline=0pt}}'
+            )
+        fi
     fi
 
     if [[ "$toc_enabled" -eq 1 ]]; then
@@ -401,6 +407,7 @@ trap cleanup_progress EXIT
 
 toc_enabled=0
 use_simple=0
+compact_layout=0
 
 # Parse options
 while [[ $# -gt 0 ]]; do
@@ -411,6 +418,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --toc)
             toc_enabled=1
+            shift
+            ;;
+        --compact)
+            compact_layout=1
             shift
             ;;
         --no-toc)

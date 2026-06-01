@@ -26,6 +26,7 @@ STUB
     run "$MD2PDF" --help
     [ "$status" -eq 0 ]
     [[ "$output" == *"Usage:"* ]]
+    [[ "$output" == *"--compact"* ]]
 }
 
 @test "-h exits 0 and prints usage" {
@@ -89,6 +90,28 @@ STUB
     run "$MD2PDF" "$BATS_TEST_TMPDIR/test.md"
     [ "$status" -eq 0 ]
     grep -q -- "--template=eisvogel" "$BATS_TEST_TMPDIR/pandoc_args"
+}
+
+@test "default mode uses original eisvogel margins" {
+    run "$MD2PDF" "$BATS_TEST_TMPDIR/test.md"
+    [ "$status" -eq 0 ]
+    ! grep -qx -- "geometry:top=0.9cm" "$BATS_TEST_TMPDIR/pandoc_args"
+    ! grep -qx -- "geometry:bottom=1.5cm" "$BATS_TEST_TMPDIR/pandoc_args"
+    ! grep -qx -- "geometry:includefoot" "$BATS_TEST_TMPDIR/pandoc_args"
+    ! grep -qx -- "geometry:includehead" "$BATS_TEST_TMPDIR/pandoc_args"
+    ! grep -Fqx -- "header-includes=\\AtBeginDocument{\\ihead*{}\\chead*{}\\ohead*{}\\KOMAoptions{headsepline=0pt}}" "$BATS_TEST_TMPDIR/pandoc_args"
+}
+
+@test "--compact trims top header space" {
+    run "$MD2PDF" --compact "$BATS_TEST_TMPDIR/test.md"
+    [ "$status" -eq 0 ]
+    grep -qx -- "geometry:top=0.9cm" "$BATS_TEST_TMPDIR/pandoc_args"
+    grep -qx -- "geometry:bottom=1.5cm" "$BATS_TEST_TMPDIR/pandoc_args"
+    grep -qx -- "geometry:left=2.5cm" "$BATS_TEST_TMPDIR/pandoc_args"
+    grep -qx -- "geometry:right=2.5cm" "$BATS_TEST_TMPDIR/pandoc_args"
+    grep -qx -- "geometry:includefoot" "$BATS_TEST_TMPDIR/pandoc_args"
+    ! grep -qx -- "geometry:includehead" "$BATS_TEST_TMPDIR/pandoc_args"
+    grep -Fqx -- "header-includes=\\AtBeginDocument{\\ihead*{}\\chead*{}\\ohead*{}\\KOMAoptions{headsepline=0pt}}" "$BATS_TEST_TMPDIR/pandoc_args"
 }
 
 @test "-s / --simple does not use eisvogel template" {

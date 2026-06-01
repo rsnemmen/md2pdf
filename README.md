@@ -52,6 +52,7 @@ Usage: md2pdf [options] <input.md> [output.pdf]
 
 Options:
   -s, --simple Use basic Pandoc output (no template, 1in margins)
+  --compact    Use reduced margins and no running header in default mode
   --toc        Include a table of contents
   --no-toc     Do not include a table of contents (default)
   -h, --help   Show this help message and exit
@@ -64,6 +65,7 @@ Arguments:
 Examples:
   md2pdf report.md                  # produces report.pdf without a TOC
   md2pdf --toc report.md            # with a TOC
+  md2pdf --compact report.md        # reduced margins and no running header
   md2pdf notes.md                   # LaTeX math delimiters auto-detected and converted
   md2pdf -s notes.md                # simple template
   md2pdf notes.md out.pdf           # explicit output filename
