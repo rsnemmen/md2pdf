@@ -347,7 +347,14 @@ convert_file() {
             --template=eisvogel
             --syntax-highlighting=idiomatic
             -V listings=false
+            -V geometry:top=1.5cm
+            -V geometry:bottom=1.5cm
+            -V geometry:left=2.5cm
+            -V geometry:right=2.5cm
+            -V geometry:includehead
+            -V geometry:includefoot
             -V header-includes='\def\ptlstinline!#1!{\texttt{#1}}\AtBeginDocument{\def\passthrough#1{\begingroup\let\lstinline\ptlstinline #1\endgroup}}'
+            -V header-includes='\AtBeginDocument{\KOMAoptions{headsepline=0pt}}'
         )
     fi
 
