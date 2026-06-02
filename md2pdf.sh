@@ -355,7 +355,7 @@ convert_file() {
         if [[ "$compact_layout" -eq 1 ]]; then
             pandoc_args+=(
                 -V geometry:top=0.9cm
-                -V geometry:bottom=1.5cm
+                -V geometry:bottom=0.9cm
                 -V geometry:left=2.5cm
                 -V geometry:right=2.5cm
                 -V geometry:includefoot

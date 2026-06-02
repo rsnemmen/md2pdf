@@ -106,7 +106,7 @@ STUB
     run "$MD2PDF" --compact "$BATS_TEST_TMPDIR/test.md"
     [ "$status" -eq 0 ]
     grep -qx -- "geometry:top=0.9cm" "$BATS_TEST_TMPDIR/pandoc_args"
-    grep -qx -- "geometry:bottom=1.5cm" "$BATS_TEST_TMPDIR/pandoc_args"
+    grep -qx -- "geometry:bottom=0.9cm" "$BATS_TEST_TMPDIR/pandoc_args"
     grep -qx -- "geometry:left=2.5cm" "$BATS_TEST_TMPDIR/pandoc_args"
     grep -qx -- "geometry:right=2.5cm" "$BATS_TEST_TMPDIR/pandoc_args"
     grep -qx -- "geometry:includefoot" "$BATS_TEST_TMPDIR/pandoc_args"
